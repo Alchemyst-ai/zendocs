@@ -1,0 +1,18 @@
+POST http://localhost:4163/api/docs/how-maya-helps-with-research-for-sales/chat/generate
+{
+  "content": "Oh that's cool, can you tell me what are the other things Alchemyst is building?"
+}
+###
+GET http://localhost:4163/api/docs/how-maya-helps-with-research-for-sales/chat/history
+###
+POST http://localhost:4163/api/docs/search
+{
+    "query": "What is Maya?"
+}
+
+HTTP/1.1 200  - OK
+vary: RSC, Next-Router-State-Tree, Next-Router-Prefetch
+content-type: application/json
+date: Thu, 08 May 2025 01:17:22 GMT
+connection: close
+transfer-encoding: chunked

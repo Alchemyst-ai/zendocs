@@ -1,0 +1,262 @@
+
+/* Global styles */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #0b0b09;
+  color: #e9e9e9;
+}
+
+/* Grid background */
+.grid-background {
+  position: relative;
+  overflow: hidden;
+}
+
+.grid-background::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(
+      to right,
+      rgba(143, 138, 246, 0.21) 1px,
+      transparent 1px
+    ),
+    linear-gradient(to bottom, rgba(143, 138, 246, 0.21) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+/* Custom Tailwind component styles */
+@layer components {
+  .btn-primary {
+    @apply bg-[#ff9933] text-black font-semibold md:rounded-tl-xl rounded-lg md:rounded-none md:rounded-br-xl hover:bg-[#ff9933c4];
+  }
+
+  .btn-secondary {
+    @apply rounded-lg md:rounded-none md:rounded-tl-xl md:rounded-br-xl border border-transparent hover:border hover:border-[#ffbe7d] hover:bg-[#15151e];
+  }
+
+  .btn-secondary-no-hover {
+    @apply rounded-tl-xl rounded-br-xl;
+  }
+
+  .btn-secondary-with-bg {
+    @apply bg-[#27272c] rounded-tl-xl rounded-br-xl hover:border hover:border-[#ffbe7d] hover:bg-[#15151e];
+  }
+}
+
+/* Custom Tailwind utility styles */
+@layer utilities {
+  .bg-grid {
+    background-image: linear-gradient(
+        to right,
+        rgba(8, 5, 37, 0.8) 2px,
+        transparent 1px
+      ),
+      linear-gradient(to bottom, rgba(8, 5, 37, 0.8) 2px, transparent 1px);
+    background-size: 40px 40px;
+  }
+}
+
+/* Animated line styles */
+.animated-line {
+  animation: animated-line 5s infinite;
+}
+
+@keyframes animated-line {
+  0% {
+    height: 0;
+    opacity: 1;
+  }
+  20% {
+    height: 100vh;
+    opacity: 0;
+  }
+  22% {
+    height: 0vh;
+  }
+  100% {
+    height: 0vh;
+  }
+}
+
+.animated-line-w {
+  animation: animated-line-w 5s infinite;
+}
+
+@keyframes animated-line-w {
+  0% {
+    width: 0;
+    opacity: 1;
+  }
+  20% {
+    width: 100vw;
+    opacity: 0;
+  }
+  22% {
+    width: 0;
+  }
+  100% {
+    width: 0;
+  }
+}
+
+/* Background radial gradient */
+.bg-radial-gradient {
+  box-shadow: 0 0 100px 130px rgba(255, 255, 255, 0.15);
+}
+
+.cursor {
+  position: fixed;
+  width: 35px;
+  height: 35px;
+  background-size: contain;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 10000;
+  transition: transform 0.1s ease;
+  transform: rotate(-45deg);
+}
+
+@keyframes spin-slow {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 20s linear infinite;
+}
+
+.animate-spin-slow-reverse {
+  animation: spin-slow 20s linear infinite reverse;
+}
+
+.orange-shadow {
+  box-shadow: 0 0 50px 5px rgba(255, 128, 1, 0.84);
+}
+
+@layer base {
+  h1 {
+    @apply text-4xl font-bold tracking-tight my-4;
+  }
+  h2 {
+    @apply text-3xl font-semibold tracking-tight my-3;
+  }
+  h3 {
+    @apply text-2xl font-semibold my-3;
+  }
+  h4 {
+    @apply text-xl font-medium my-3;
+  }
+  h5 {
+    @apply text-lg font-medium my-2;
+  }
+  /* ... */
+  ul, ol, li {
+      @apply pl-4 my-3;
+    list-style: revert;
+  }
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+  }
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+
+
+}
+
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.feature-card-hover {
+  box-shadow: 0 0 15px 5px rgba(255, 255, 0, 0.7);
+}
+
+@keyframes neon-glow {
+  0% {
+    box-shadow: 0 0 5px 2px rgba(255, 255, 0, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 20px 10px rgba(255, 255, 0, 0.7);
+  }
+  100% {
+    box-shadow: 0 0 5px 2px rgba(255, 255, 0, 0.7);
+  }
+}
+
+.feature-card-hover:hover {
+  animation: neon-glow 1.5s ease-in-out infinite;
+}
+
+
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

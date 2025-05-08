@@ -1,0 +1,13 @@
+# *
+User-agent: *
+Allow: /
+
+# *
+User-agent: *
+Disallow: /admin
+
+# Host
+Host: https://getalchemystai.com/
+
+# Sitemaps
+Sitemap: https://zendocs.getalchemystai.com/api/sitemap
