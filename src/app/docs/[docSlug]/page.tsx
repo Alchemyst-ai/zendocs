@@ -33,7 +33,7 @@ export async function generateMetadata({
 }
 
 async function getData(
-  slug: string
+  slug: string,
 ): Promise<{ data: DocResponse; success: boolean }> {
   const res = await fetch(
     `${process.env.NEXT_APP_BACKEND_URL ?? "http://localhost:4163"}/api/docs/${slug}`,
@@ -41,7 +41,7 @@ async function getData(
       method: "GET",
       // cache: "no-store",
       // signal: new AbortController().abort(5_000),
-    }
+    },
   );
 
   if (!res.ok) {

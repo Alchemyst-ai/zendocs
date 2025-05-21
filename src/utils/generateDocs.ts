@@ -1,32 +1,44 @@
 import Doc from "@/models/doc";
+import DocChat from "@/models/docChat";
 import { z } from "zod";
 import { connectToCoreDB } from "./database";
 import { parseUntilJson } from "./parseUntilJson";
 
 /** ---------------------------- Schemas ---------------------------- */
+// export const LangChainJSONSchema = z.object({
+//   lc: z.number().describe("LangChain-specific number field"),
+//   type: z.string().describe("Type of the LangChain message"),
+//   id: z.array(z.string()).describe("Array of IDs associated with the message"),
+//   lc_kwargs: z
+//     .object({
+//       content: z.string().describe("Content of the message"),
+//       additional_kwargs: z
+//         .record(z.any())
+//         .describe("Additional keyword arguments"),
+//       response_metadata: z
+//         .record(z.any())
+//         .describe("Metadata related to the response"),
+//       tool_calls: z
+//         .array(z.any())
+//         .optional()
+//         .describe("Optional array of tool calls"),
+//       invalid_tool_calls: z
+//         .array(z.any())
+//         .optional()
+//         .describe("Optional array of invalid tool calls"),
+//     })
+//     .describe("Key arguments related to the LangChain message"),
+// });
+
 export const LangChainJSONSchema = z.object({
-  lc: z.number().describe("LangChain-specific number field"),
-  type: z.string().describe("Type of the LangChain message"),
-  id: z.array(z.string()).describe("Array of IDs associated with the message"),
-  lc_kwargs: z
-    .object({
-      content: z.string().describe("Content of the message"),
-      additional_kwargs: z
-        .record(z.any())
-        .describe("Additional keyword arguments"),
-      response_metadata: z
-        .record(z.any())
-        .describe("Metadata related to the response"),
-      tool_calls: z
-        .array(z.any())
-        .optional()
-        .describe("Optional array of tool calls"),
-      invalid_tool_calls: z
-        .array(z.any())
-        .optional()
-        .describe("Optional array of invalid tool calls"),
-    })
-    .describe("Key arguments related to the LangChain message"),
+  role: z
+    .enum(["system", "user", "assistant"])
+    .describe("Type of the LangChain message"),
+  content: z.string().describe("Content of the message"),
+  json: z
+    .record(z.string(), z.any())
+    .optional()
+    .describe("An optional JSON if needed"),
 });
 
 export const ChatRequestBodySchema = z.object({
@@ -57,7 +69,7 @@ export const GenerationResultSchema = z.object({
       content: z.string(),
       additional_kwargs: z.record(z.any()),
       response_metadata: z.record(z.any()),
-    })
+    }),
   ),
   json: z.object({
     searchResults: z.array(z.record(z.any())),
@@ -99,7 +111,7 @@ export function slugify(title: string): string {
 }
 
 export const generateDocs = async (
-  query: string
+  query: string,
 ): Promise<ParsedData | null> => {
   await connectToCoreDB();
   const parsedQuery = `You are a helpful JSON generator assistant. Please return me the JSON for the question I want to get an answer in the following format:
@@ -117,29 +129,21 @@ How does Maya help me with researching on people to sell?
 
 For the reference data, you can use context. Be as elaborate as possible. Assume the user has no working knowledge about GenAI, LLMs or the Alchemyst Platform. Introduce yourself as Maya. Do not call the user's name. If you have multiple "content" fields, combine them into one.
 `;
-  const requestBody: ChatRequestBodyWithId = {
+  const requestBody = {
     chat_history: [
       {
-        lc: 0,
-        type: "user",
-        id: ["1"],
-        lc_kwargs: {
-          content: parsedQuery,
-          additional_kwargs: {
-            content: parsedQuery,
-          },
-          response_metadata: {},
-        },
+        content: parsedQuery,
+        role: "user",
       },
     ],
     researchMode: false,
     stream: false,
     source: "integrations.zendocs",
     scope: "internal",
-  };
+  } satisfies ChatRequestBodyWithId;
 
   const response = await fetch(
-    `${process.env.BACKEND_BASE_URL}/api/chat/generate`,
+    `${process.env.BACKEND_BASE_URL}/api/v1/chat/generate`,
     {
       method: "POST",
       body: JSON.stringify(requestBody),
@@ -147,7 +151,7 @@ For the reference data, you can use context. Be as elaborate as possible. Assume
         Authorization: `Bearer ${process.env.ALCHEMYST_API_KEY}`,
         "Content-Type": "application/json",
       },
-    }
+    },
   );
 
   if (response.ok) {
@@ -164,6 +168,7 @@ For the reference data, you can use context. Be as elaborate as possible. Assume
 
     if (!!parsedData.result.content) {
       console.log("Creating documentation entry...");
+      // Create the document entry based on user's query
       const createdDoc = await Doc.create({
         content: parsedData.result.content,
         slug: slugify(parsedData.title),
@@ -172,6 +177,13 @@ For the reference data, you can use context. Be as elaborate as possible. Assume
           timestamp: parsedData.timestamp,
         },
       });
+
+      // Now create a corresponding doc entry
+      const correspondingChat = await DocChat.create({
+        docId: createdDoc._id,
+        messages: [],
+        title: createdDoc.title
+      })
     }
 
     return parsedData;

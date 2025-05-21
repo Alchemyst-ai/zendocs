@@ -63,7 +63,7 @@ export default function DocGen() {
           data.data.result.content?.replaceAll("\\n", "\n\n") ||
             // .replaceAll("\\n", "<br />")
             // .replaceAll("\n", "<br />")
-            "Generated document content will appear here."
+            "Generated document content will appear here.",
         );
         setGeneratedContentTitle(data.data.title);
         setGeneratedContentTimestamp(data.data.timestamp);

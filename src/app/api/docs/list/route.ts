@@ -9,7 +9,7 @@ const handler = async (req: NextRequest) => {
   if (req.method !== "GET") {
     return NextResponse.json(
       { success: false, message: "Method Not Allowed" },
-      { status: 405 }
+      { status: 405 },
     );
   }
 
@@ -21,7 +21,7 @@ const handler = async (req: NextRequest) => {
   }));
   return NextResponse.json(
     { success: true, data: docsListWithoutChatId },
-    { status: 200 }
+    { status: 200 },
   );
 };
 

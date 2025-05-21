@@ -1,6 +1,8 @@
 import Doc from "@/models/doc";
+import DocChat from "@/models/docChat";
 import { connectToCoreDB } from "@/utils/database";
-import { slugify } from "@/utils/generateDocs";
+import { findRelevantDocChat } from "@/utils/docAndChatUtils";
+import { LangChainJSON } from "@/utils/generateDocs";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -13,7 +15,7 @@ const schema = z.object({
 
 const handler = async (
   req: NextRequest,
-  { params }: { params: { docSlug: string } }
+  { params }: { params: { docSlug: string } },
 ) => {
   await connectToCoreDB();
   if (req.method !== "POST") {
@@ -23,7 +25,7 @@ const handler = async (
       },
       {
         status: 405,
-      }
+      },
     );
   }
 
@@ -35,72 +37,25 @@ const handler = async (
   if (!success) {
     return NextResponse.json(
       { success: false, message: error.format() },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   if (!docSlug) {
     return NextResponse.json(
       { error: "No document slug given by user." },
-      { status: 400 }
+      { status: 400 },
     );
   }
   const requiredDoc = await Doc.findOne({ slug: docSlug });
   if (!requiredDoc) {
     return NextResponse.json(
       { error: "No such document slug found." },
-      { status: 404 }
+      { status: 404 },
     );
   }
 
-  const fetchChatsResponse = await fetch(
-    process.env.BACKEND_BASE_URL +
-      "/api/chat/history?source=integrations.zendocs",
-    { headers: { Authorization: `Bearer ${process.env.ALCHEMYST_API_KEY}` } }
-  );
-
-  if (!fetchChatsResponse.ok) {
-    return NextResponse.json(
-      { error: "Failed to fetch chat history." },
-      { status: 500 }
-    );
-  }
-
-  const {
-    chats,
-  }: { chats: { title: string; id: string; timestamp: number }[] } =
-    await fetchChatsResponse.json();
-
-  const concernedChat = chats.find((chat) => slugify(chat.title) === docSlug);
-
-  if (!concernedChat) {
-    return NextResponse.json(
-      {
-        error:
-          "CRIT-404: Critical - No such chat found in the backend for the user. Contact the admin team of this ZenDocs website!",
-      },
-      { status: 404 }
-    );
-  }
-
-  const { id: concernedChatId, title: concernedChatTitle } = concernedChat;
-
-  const concernedChatHistoryResponse = await fetch(
-    process.env.BACKEND_BASE_URL + "/api/chat/maya/recall",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.ALCHEMYST_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title: concernedChatTitle,
-        source: "integrations.zendocs",
-      }),
-    }
-  );
-
-  const augmenteQuery = `
+  const augmentedQuery = `
   \`\`\`
   ${requiredDoc.content}
   \`\`\`
@@ -110,8 +65,30 @@ const handler = async (
   ${data.content}
   \`\`\`
   `;
+
+  const concernedDoc = await Doc.findOne({ slug: docSlug });
+
+  if (!concernedDoc) {
+    return NextResponse.json({}, { status: 404 });
+  }
+
+  let concernedChat = await findRelevantDocChat(concernedDoc._id);
+
+  if (!concernedChat) {
+    console.log("Couldn't find the relevant Doc Chat, creating new chat...");
+
+    concernedChat = await DocChat.create({
+      docId: concernedDoc._id,
+      messages: [],
+      title: concernedDoc.title,
+    })
+
+    // return NextResponse.json({ error: "Cannot find chat corresponding to the document." }, { status: 500 });
+  }
+
+  const apiCompatibleMessages: LangChainJSON[] = (concernedChat.messages ?? []).map(msg => ({ role: msg.role, content: msg.message }))
   const newChatMessage = await fetch(
-    process.env.BACKEND_BASE_URL + "/api/chat/generate",
+    process.env.BACKEND_BASE_URL + "/api/v1/chat/generate",
     {
       method: "POST",
       headers: {
@@ -119,33 +96,21 @@ const handler = async (
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        chat_history: [
-          {
-            lc: 0,
-            type: "user",
-            id: [concernedChatId],
-            lc_kwargs: {
-              content: augmenteQuery,
-              additional_kwargs: {
-                content: augmenteQuery,
-              },
-              response_metadata: {},
-            },
-          },
-        ],
-        chatId: concernedChatId,
+        chat_history: [...apiCompatibleMessages, { role: 'user', content: augmentedQuery } satisfies LangChainJSON],
+        chatId: concernedChat._id.toString(),
         researchMode: false,
         stream: false,
         source: "integrations.zendocs",
         scope: "internal",
+        title: concernedDoc.title,
       }),
-    }
+    },
   );
 
   if (!newChatMessage.ok) {
     return NextResponse.json(
       { error: "Failed to generate new chat message." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -162,9 +127,9 @@ const handler = async (
       role: "assistant",
       timestamp: Date.now(),
       id: crypto.randomUUID(),
-      chatId: concernedChatId,
+      chatId: concernedChat._id.toString(),
     },
-    { status: 201 }
+    { status: 201 },
   );
 };
 

@@ -16,7 +16,7 @@ export const GET = async (req: NextRequest): Promise<NextResponse> => {
           <loc>https://zendocs.getalchemystai.com/docs/${doc.slug}</loc>
           <lastmod>${doc.updatedAt.toISOString()}</lastmod>
         </url>
-      `
+      `,
         )
         .join("")}
     </urlset>`;

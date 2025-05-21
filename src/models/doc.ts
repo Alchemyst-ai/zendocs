@@ -42,7 +42,7 @@ const docSchema = new Schema(
       default: {},
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 docSchema.index({ content: "text", title: "text" });

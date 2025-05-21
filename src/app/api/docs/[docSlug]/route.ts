@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const handler = async (
   req: NextRequest,
-  { params }: { params: { docSlug: string } }
+  { params }: { params: { docSlug: string } },
 ) => {
   await connectToCoreDB();
   const docSlug = params.docSlug;
@@ -18,7 +18,7 @@ const handler = async (
         success: false,
         error: "Document not found",
       },
-      { status: 404 }
+      { status: 404 },
     );
   }
 
@@ -27,7 +27,7 @@ const handler = async (
       success: true,
       data: requiredDoc,
     },
-    { status: 200 }
+    { status: 200 },
   );
 };
 

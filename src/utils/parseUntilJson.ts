@@ -6,7 +6,7 @@ export function parseUntilJson(jsonstr: string): Record<string, any> {
   try {
     const properlyParsedJson = JSON.parse(jsonRes);
     console.log(
-      "\n\n===============================\nJSON parsed properly\n===============================\n\n"
+      "\n\n===============================\nJSON parsed properly\n===============================\n\n",
     );
     if (typeof properlyParsedJson === "object" && properlyParsedJson !== null) {
       return properlyParsedJson;
@@ -15,13 +15,13 @@ export function parseUntilJson(jsonstr: string): Record<string, any> {
     }
   } catch (error) {
     console.info(
-      "\n\n===============================\nError parsing the JSON using regular JSON.parse...\n===============================\n"
+      "\n\n===============================\nError parsing the JSON using regular JSON.parse...\n===============================\n",
     );
   }
 
   console.log(
     "\n=================\njsonRes type:\n=================\n",
-    typeof jsonRes
+    typeof jsonRes,
   );
   if (typeof jsonRes === "object") {
     console.log(Object.keys(jsonRes));
@@ -64,7 +64,7 @@ export function parseUntilJson(jsonstr: string): Record<string, any> {
     return jsonRes;
   } catch (error) {
     console.info(
-      "\n\n===============================\nError parsing the JSON...\n===============================\n"
+      "\n\n===============================\nError parsing the JSON...\n===============================\n",
     );
     console.info(error);
     return {};

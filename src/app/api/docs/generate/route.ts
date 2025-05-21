@@ -7,7 +7,7 @@ const handler = async (req: NextRequest) => {
   try {
     // Simple request debouncing using a delay. Just a quick debounce
     const debouncingThreshold = parseInt(
-      process.env.DEBOUNCING_THRESHOLD || "2_500"
+      process.env.DEBOUNCING_THRESHOLD || "2_500",
     );
     await new Promise((resolve) => setTimeout(resolve, debouncingThreshold));
     const { query } = await req.json();
@@ -15,7 +15,7 @@ const handler = async (req: NextRequest) => {
     if (!query.trim()) {
       return NextResponse.json(
         { success: false, message: "Query is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -25,7 +25,7 @@ const handler = async (req: NextRequest) => {
     if (!response) {
       return NextResponse.json(
         { success: false, message: "API call failed" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -33,7 +33,7 @@ const handler = async (req: NextRequest) => {
 
     return NextResponse.json(
       { success: true, data: responseWithoutChatId },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     return NextResponse.json({}, { status: 500 });

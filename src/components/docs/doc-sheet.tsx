@@ -27,7 +27,7 @@ interface DocSheetProps {
 /* --------------------------------------------- Utils --------------------------------------------- */
 const downloadAsTxt = (
   generatedContent: string,
-  generatedContentTitle: string
+  generatedContentTitle: string,
 ) => {
   // Convert HTML to plain text (basic conversion)
   const plainText = generatedContent

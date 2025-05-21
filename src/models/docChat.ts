@@ -13,7 +13,7 @@ const messageSchema = new Schema(
     message: { type: String, required: true },
     json: { type: String, required: false, default: "" }, // Assuming json is a stringified JSON object
   },
-  { timestamps: true }
+  { timestamps: true },
 ); // Disable _id for subdocuments if not needed
 
 const docChatSchema = new Schema(
@@ -22,7 +22,7 @@ const docChatSchema = new Schema(
     docId: { type: Schema.Types.ObjectId, ref: "Doc", required: true },
     title: { type: String, required: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 /* ----------------- Model --------------- */

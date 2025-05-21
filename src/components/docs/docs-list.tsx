@@ -36,7 +36,7 @@ const fetchDocuments = async (): Promise<BoxType<Document[]>> => {
     return {
       content: null,
       error: new Error(
-        `Failed to fetch documents. Error: ${documentResponse.status} - ${documentResponse.statusText}`
+        `Failed to fetch documents. Error: ${documentResponse.status} - ${documentResponse.statusText}`,
       ),
     };
   }
@@ -79,7 +79,7 @@ export function DocumentList({ currentSlug }: DocumentListProps) {
       setFilteredDocs(documents);
     } else {
       const filtered = documents.filter(
-        (doc) => doc.title.toLowerCase().includes(searchQuery.toLowerCase()) // ||
+        (doc) => doc.title.toLowerCase().includes(searchQuery.toLowerCase()), // ||
         // doc.category.toLowerCase().includes(searchQuery.toLowerCase())
       );
       setFilteredDocs(filtered);
