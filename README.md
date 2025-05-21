@@ -1,4 +1,10 @@
 # Alchemyst Zendocs - feel the Zen in your documents!
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/e255dc5c-d6e3-4596-9e87-bb62ca9bb1f2" alt="The ZenDocs Logo" height="300" width="300"/>
+</p>
+<p align="center">
+  <img src="https://app.codacy.com/project/badge/Grade/f028d0a33a9641689a6b4c4c16984636" alt="codacy badge"/>
+</p>
 
 Put your SEO on autopilot. Write the internal docs, let the Alchemyst platform take care of the rest.
 
