@@ -189,7 +189,7 @@ function DocSearch({
             {isGenerating ? (
               <div className="p-4 text-center">
                 <Loader2 className="h-6 w-6 animate-spin inline-block mr-2" />
-                <div className="mt-2 text-sm">Generating document about "<span className="font-medium">{query.length > 25 ? query.slice(0, 25) + "..." : query}</span></div>
+                <div className="mt-2 text-sm">Generating document about &quot;<span className="font-medium">{query.length > 25 ? query.slice(0, 25) + "..." : query}</span>&quot;</div>
               </div>
             ) : (
               <>
