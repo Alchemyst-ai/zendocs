@@ -38,6 +38,7 @@ function DocSearch({
   const [generatedContentTimestamp, setGeneratedContentTimestamp] = useState(0);
   const [generatedContentSlug, setGeneratedContentSlug] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const handleSearch = async () => {
@@ -78,6 +79,7 @@ function DocSearch({
     if (!query.trim()) return;
 
     setIsLoading(true);
+    setIsGenerating(true);
 
     try {
       // Make API call to backend
@@ -119,6 +121,7 @@ function DocSearch({
       console.error("Error making API call:", error);
     } finally {
       setIsLoading(false);
+      setIsGenerating(false);
     }
   };
 
@@ -148,7 +151,11 @@ function DocSearch({
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Search Results for: &quot;{query}&quot;</DialogTitle>
+            <DialogTitle>
+              Search Results for: &quot;
+              <span className="truncate inline-block max-w-[200px] align-bottom overflow-hidden">{query}</span>
+              {query.length > 30 ? "..." : ""}&quot;
+            </DialogTitle>
             <DialogDescription>
               {searchResultsLoading
                 ? "Loading..."
@@ -160,13 +167,16 @@ function DocSearch({
               {searchResults.map((result, index) => (
                 <Card
                   key={index}
-                  className="py-2 my-1 px-3 cursor-pointer"
+                  className="py-2 my-1 px-3 cursor-pointer flex items-center"
                   onClick={() => window.open(`/docs/${result.slug}`, "_blank")}
                 >
-                  <CardTitle className="font-medium">{result.title}</CardTitle>
-                  <CardDescription>
-                    {result.content.slice(0, 30)}...
-                  </CardDescription>
+                  <img src="/logo/documents.png" alt="document" width={16} height={16} />
+                  <div className="ml-2">
+                    <CardTitle className="font-medium">{result.title.length > 30 ? result.title.slice(0, 30) + "..." : result.title}</CardTitle>
+                    <CardDescription>
+                      {result.content.slice(0, 30)}...
+                    </CardDescription>
+                  </div>
                 </Card>
               ))}
             </div>
@@ -175,7 +185,26 @@ function DocSearch({
           {!searchResultsLoading && searchResults.length === 0 && (
             <div>No results found.</div>
           )}
-          <Button onClick={handleGenerate}>Generate content</Button>
+          <div className="mt-4 border-t pt-4">
+            {isGenerating ? (
+              <div className="p-4 text-center">
+                <Loader2 className="h-6 w-6 animate-spin inline-block mr-2" />
+                <div className="mt-2 text-sm">Generating document about "<span className="font-medium">{query.length > 25 ? query.slice(0, 25) + "..." : query}</span>"</div>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-2 p-2 rounded-md">
+                  <div className="text-white p-1 rounded-md">
+                    <img src="/logo/ai.png" alt="AI assistant" width={16} height={16} />
+                  </div>
+                  <div>Ask AI assistant</div>
+                </div>
+                <div className="text-purple-500 ml-8 mt-1 text-sm cursor-pointer hover:bg-gray-100 p-2 rounded-md" onClick={handleGenerate}>
+                  Can you tell me about {query}{query.length > 30 ? "..." : "?"}
+                </div>
+              </>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
       {isSheetOpen && (
