@@ -130,19 +130,19 @@ export function DocumentList({ currentSlug }: DocumentListProps) {
                 onClick={() => handleDocumentClick(doc.slug)}
               >
                 <CardContent className="p-3">
-                  <div className="flex items-start gap-2">
-                    <FileText className="h-4 w-4 mt-0.5 text-gray-400" />
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-6 w-6 mt-1 text-gray-400" />
                     <div>
                       <h3 className="font-medium text-sm text-gray-200">
-                        {doc.title}
+                        {doc.title.length > 40 ? doc.title.slice(0, 40) + "..." : doc.title}
                       </h3>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs text-gray-400">
-                          {doc.category}
+                          {doc.category || "Uncategorized"}
                         </span>
                         <span className="text-xs text-gray-500">•</span>
                         <span className="text-xs text-gray-500">
-                          {doc.updatedAt}
+                          {doc.updatedAt.slice(0, 10)}
                         </span>
                       </div>
                     </div>

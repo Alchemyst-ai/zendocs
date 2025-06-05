@@ -92,12 +92,12 @@ export default function DocGen() {
       <ResizablePanelGroup direction="horizontal" className="min-h-full">
         {isDocsListOpen && (
           <>
-            <ResizablePanel defaultSize={20} minSize={15} maxSize={30}>
+            <ResizablePanel defaultSize={22} minSize={22} maxSize={22}>
               <div className="h-full bg-zinc-950 relative">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute top-2 right-2 text-gray-400 hover:text-white"
+                  className="absolute top-2 right-2 text-gray-400 hover:text-black"
                   onClick={() => setIsDocsListOpen(false)}
                 >
                   <X className="h-5 w-5" />
@@ -105,7 +105,7 @@ export default function DocGen() {
                 <DocumentList currentSlug={generatedContentSlug} />
               </div>
             </ResizablePanel>
-            <ResizableHandle withHandle />
+            <ResizableHandle />
           </>
         )}
 
@@ -115,7 +115,7 @@ export default function DocGen() {
             <Button
               variant="ghost"
               size="icon"
-              className="text-gray-400 hover:text-white"
+              className="text-gray-400 hover:text-black"
               onClick={() => setIsDocsListOpen(true)}
             >
               <Menu className="h-5 w-5" />
