@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send } from "lucide-react";
+import { Send, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -184,6 +184,26 @@ function ChatApp({ docSlug }: ChatAppProps) {
                 </div>
               </div>
             ))}
+            
+            {isLoading && (
+              <div className="flex justify-start max-w-lg min-w-lg">
+                <div className="flex max-w-[80%] flex-row">
+                  <Avatar className="h-8 w-8 mr-2 bg-amber-500 flex items-center justify-center text-white">
+                    <span className="text-xs font-bold">AI</span>
+                  </Avatar>
+                  <div className="rounded-lg px-3 py-2 bg-zinc-800 text-gray-100">
+                    <p className="text-sm flex mt-0.5 justify-center items-center">
+                      <span className="typing-dots">
+                        <span className="dot"></span>
+                        <span className="dot"></span>
+                        <span className="dot"></span>
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
@@ -210,10 +230,49 @@ function ChatApp({ docSlug }: ChatAppProps) {
             disabled={isLoading || !input.trim()}
             className="bg-amber-500 hover:bg-amber-600"
           >
-            <Send className="h-4 w-4" />
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
           </Button>
         </form>
       </CardFooter>
+
+      <style jsx global>{`
+        .typing-dots {
+          display: flex;
+          align-items: center;
+          column-gap: 4px;
+        }
+        
+        .dot {
+          width: 5px;
+          height: 5px;
+          background: white;
+          border-radius: 50%;
+          animation: typing-dot 1.5s infinite ease-in-out;
+        }
+        
+        .dot:nth-child(2) {
+          animation-delay: 0.2s;
+        }
+        
+        .dot:nth-child(3) {
+          animation-delay: 0.4s;
+        }
+        
+        @keyframes typing-dot {
+          0%, 60%, 100% {
+            transform: translateY(0);
+            opacity: 0.6;
+          }
+          30% {
+            transform: translateY(-4px);
+            opacity: 1;
+          }
+        }
+      `}</style>
     </Card>
   );
 }
