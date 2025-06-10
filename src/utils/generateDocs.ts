@@ -69,7 +69,7 @@ export const GenerationResultSchema = z.object({
       content: z.string(),
       additional_kwargs: z.record(z.any()),
       response_metadata: z.record(z.any()),
-    }),
+    })
   ),
   json: z.object({
     searchResults: z.array(z.record(z.any())),
@@ -111,7 +111,7 @@ export function slugify(title: string): string {
 }
 
 export const generateDocs = async (
-  query: string,
+  query: string
 ): Promise<ParsedData | null> => {
   await connectToCoreDB();
   const parsedQuery = `You are a helpful JSON generator assistant. Please return me the JSON for the question I want to get an answer in the following format:
@@ -151,12 +151,15 @@ For the reference data, you can use context. Be as elaborate as possible. Assume
         Authorization: `Bearer ${process.env.ALCHEMYST_API_KEY}`,
         "Content-Type": "application/json",
       },
-    },
+    }
   );
 
   console.log("Response status: ", response.status);
   if (!response.ok) {
-    console.error("Error in response while generating docs:", response.statusText);
+    console.error(
+      "Error in response while generating docs:",
+      response.statusText
+    );
     console.error("Response body: ", await response.text());
     return null;
   }
@@ -174,6 +177,25 @@ For the reference data, you can use context. Be as elaborate as possible. Assume
     };
 
     if (!!parsedData.result.content) {
+      // First check if the document already exists
+      const existingDoc = await Doc.findOne({
+        slug: slugify(parsedData.title),
+      });
+
+      if (existingDoc) {
+        console.log("Document already exists, skipping creation.");
+        return {
+          title: existingDoc.title,
+          result: {
+            content: existingDoc.content,
+            ...existingDoc.metadata,
+          },
+          slug: existingDoc.slug,
+          timestamp: existingDoc.metadata.timestamp,
+          chatId: null,
+        };
+      }
+
       console.log("Creating documentation entry...");
       // Create the document entry based on user's query
       const createdDoc = await Doc.create({
@@ -189,8 +211,8 @@ For the reference data, you can use context. Be as elaborate as possible. Assume
       const correspondingChat = await DocChat.create({
         docId: createdDoc._id,
         messages: [],
-        title: createdDoc.title
-      })
+        title: createdDoc.title,
+      });
     }
 
     return parsedData;
