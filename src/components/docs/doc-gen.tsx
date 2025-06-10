@@ -123,8 +123,14 @@ export default function DocGen() {
           </div>
 
           {/* Main content centered in the middle */}
-          <div className="h-full w-full flex items-center justify-center">
-            <div className="w-full max-w-md flex flex-col items-center">
+          <div className="h-full w-full flex items-center justify-center relative">
+            {/* Gradient background */}
+            <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(249,115,22,0.15)_0%,rgba(249,115,22,0.05)_50%,transparent_100%)]" />
+            
+            {/* Grid pattern */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:32px_32px]" />
+            
+            <div className="w-full max-w-md flex flex-col items-center relative z-10">
               {/* Logo */}
               <div className="mb-8">
                 <Image
@@ -144,7 +150,7 @@ export default function DocGen() {
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyDown={handleKeyDown as never}
                     placeholder="Generate your doc on..."
-                    className="bg-background border-orange-500 focus-visible:ring-orange-500 pr-10 py-6 text-base min-h-[100px]"
+                    className="bg-background/60 backdrop-blur-sm border border-orange-500/50 focus-visible:ring-orange-500 pr-10 py-6 text-base min-h-[100px] shadow-lg rounded-xl"
                     disabled={isLoading}
                   />
                   {query && (
@@ -152,7 +158,7 @@ export default function DocGen() {
                       variant="ghost"
                       size="icon"
                       onClick={() => setQuery("")}
-                      className="absolute right-2 top-4 h-8 w-8 text-muted-foreground hover:text-foreground"
+                      className="absolute right-2 top-4 h-8 w-8 text-muted-foreground hover:text-foreground backdrop-blur-sm"
                       disabled={isLoading}
                     >
                       <X className="h-4 w-4" />
@@ -167,7 +173,7 @@ export default function DocGen() {
                 {/* <Button
                   onClick={toggleSearchModal}
                   disabled={isLoading}
-                  className="bg-orange-500 hover:bg-orange-600 text-white"
+                  className="bg-orange-500/80 hover:bg-orange-600 text-white backdrop-blur-sm shadow-lg border border-orange-400/20 rounded-xl"
                 >
                   {isLoading ? (
                     <>
@@ -184,7 +190,7 @@ export default function DocGen() {
               </div>
 
               {/* Instructions */}
-              <p className="mt-6 text-muted-foreground text-sm text-center">
+              {/* <p className="mt-6 text-muted-foreground text-sm text-center">
                 Press{" "}
                 <kbd className="px-1.5 py-0.5 bg-muted rounded text-orange-500 font-semibold">
                   Ctrl
@@ -194,7 +200,7 @@ export default function DocGen() {
                   Enter
                 </kbd>{" "}
                 to generate
-              </p>
+              </p> */}
             </div>
           </div>
         </ResizablePanel>
