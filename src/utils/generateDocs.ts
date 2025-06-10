@@ -154,6 +154,13 @@ For the reference data, you can use context. Be as elaborate as possible. Assume
     },
   );
 
+  console.log("Response status: ", response.status);
+  if (!response.ok) {
+    console.error("Error in response while generating docs:", response.statusText);
+    console.error("Response body: ", await response.text());
+    return null;
+  }
+
   if (response.ok) {
     const data = (await response.json()) as GenerationResponse;
     console.log("Received data = ");
