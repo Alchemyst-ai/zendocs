@@ -94,7 +94,7 @@ export default function DocumentLayout({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute top-2 right-2 text-gray-400 hover:text-white"
+                  className="absolute top-2 right-2 text-gray-400 hover:text-black"
                   onClick={() => setIsChatOpen(false)}
                 >
                   <X className="h-5 w-5" />

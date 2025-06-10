@@ -3,9 +3,10 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FileText, Search } from "lucide-react";
+import { FileText, Home, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 interface Document {
   id: string;
@@ -90,9 +91,26 @@ export function DocumentList({ currentSlug }: DocumentListProps) {
     router.push(`/docs/${slug}`);
   };
 
+  const handleHomeClick = () => {
+    router.push("/");
+  };
+
   return (
     <div className="flex flex-col h-full p-4">
-      <h2 className="text-xl font-bold mb-4">Documents</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold">Documents</h2>
+        {currentSlug && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-gray-400 hover:text-black"
+            onClick={handleHomeClick}
+            title="Return to home page"
+          >
+            <Home className="h-5 w-5" />
+          </Button>
+        )}
+      </div>
 
       <div className="relative mb-4">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
