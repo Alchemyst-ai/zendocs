@@ -44,7 +44,8 @@ const handler = async (req: NextRequest) => {
       { status: 201 },
     );
   } catch (error) {
-    return NextResponse.json({}, { status: 500 });
+    console.log("Error in generate docs route: ", error);
+    return NextResponse.json({ error: process.env.DEBUG === "debug" ? error : "An error occured, please inform the team!" }, { status: 500 });
   }
 };
 
