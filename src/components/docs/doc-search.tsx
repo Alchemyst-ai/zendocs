@@ -199,7 +199,7 @@ function DocSearch({
                   </div>
                   <div>Ask AI assistant</div>
                 </div>
-                <div className="text-purple-500 ml-8 mt-1 text-sm cursor-pointer hover:bg-gray-100 p-2 rounded-md" onClick={handleGenerate}>
+                <div className="text-white hover:text-orange-500 ml-8 mt-1 text-sm cursor-pointer hover:bg-gray-100 p-2 rounded-md bg-orange-400" onClick={handleGenerate}>
                   Can you tell me about {query}{query.length > 30 ? "..." : "?"}
                 </div>
               </>

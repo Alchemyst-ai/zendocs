@@ -147,12 +147,15 @@ function ChatApp({ docSlug }: ChatAppProps) {
   };
 
   return (
-    <Card className="h-full flex flex-col bg-zinc-900 border-zinc-800 text-white">
-      <CardHeader className="pb-2">
+    <Card className="h-full border-none w-full flex flex-col bg-zinc-900 border-zinc-800 text-white relative">
+      {/* Subtle orange gradient overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(249,115,22,0.15)_0%,rgba(249,115,22,0.05)_50%,transparent_100%)] pointer-events-none" />
+      
+      <CardHeader className="pb-2 relative z-10">
         <CardTitle className="text-lg font-medium">Document Chat</CardTitle>
       </CardHeader>
 
-      <CardContent className="flex-grow overflow-hidden p-0">
+      <CardContent className="flex-grow overflow-hidden p-0 relative z-10">
         <ScrollArea className="h-[calc(100vh-13rem)] px-4">
           <div className="space-y-4 pt-2 pb-4">
             {messages.map((message) => (
@@ -209,7 +212,7 @@ function ChatApp({ docSlug }: ChatAppProps) {
         </ScrollArea>
       </CardContent>
 
-      <CardFooter className="pt-2 border-t border-zinc-800">
+      <CardFooter className="pt-2 border-t border-zinc-800 relative z-10">
         <form
           onSubmit={(e) => {
             e.preventDefault();
