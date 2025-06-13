@@ -111,31 +111,37 @@ export function slugify(title: string): string {
 }
 
 export const fetchContext = async (query: string) => {
-  const requestBody = {
-    query,
-    similarity_threshold: 0.8,
-    minimum_similarity_threshold: 0.6,
-    scope: "external",
-    metadata: {},
-  };
+  try {
+    await connectToCoreDB();
+    const requestBody = {
+      query,
+      similarity_threshold: 0.8,
+      minimum_similarity_threshold: 0.6,
+      scope: "external",
+      metadata: {},
+    };
 
-  const contextResponse = await fetch(
-    `${process.env.BACKEND_BASE_URL}/api/v1/context/search`,
-    {
-      method: "POST",
-      body: JSON.stringify(requestBody),
-      headers: {
-        Authorization: `Bearer ${process.env.ALCHEMYST_API_KEY}`,
-        "Content-Type": "application/json",
-      },
+    const contextResponse = await fetch(
+      `${process.env.BACKEND_BASE_URL}/api/v1/context/search`,
+      {
+        method: "POST",
+        body: JSON.stringify(requestBody),
+        headers: {
+          Authorization: `Bearer ${process.env.ALCHEMYST_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!contextResponse.ok || contextResponse.redirected) {
+      return [];
     }
-  );
 
-  if (!contextResponse.ok || contextResponse.redirected) {
+    return contextResponse.json();
+  } catch (error) {
+    console.log("Error caused while fetching context = ", error);
     return [];
   }
-
-  return contextResponse.json();
 };
 
 export const generateDocs = async (
@@ -158,7 +164,7 @@ ${query}
 
 The relevant context is:
 \`\`\`
-${fetchedContext}
+${JSON.stringify(fetchedContext)}
 \`\`\`
 
 Be as elaborate as possible. Assume the user has no working knowledge about GenAI, LLMs or the Alchemyst Platform. Introduce yourself as Maya. Do not call the user's name. If you have multiple "content" fields, combine them into one.
