@@ -110,10 +110,39 @@ export function slugify(title: string): string {
     .replace(/-+/g, "-"); // Replace multiple hyphens with a single hyphen
 }
 
+export const fetchContext = async (query: string) => {
+  const requestBody = {
+    query,
+    similarity_threshold: 0.8,
+    minimum_similarity_threshold: 0.6,
+    scope: "external",
+    metadata: {},
+  };
+
+  const contextResponse = await fetch(
+    `${process.env.BACKEND_BASE_URL}/api/v1/context/search`,
+    {
+      method: "POST",
+      body: JSON.stringify(requestBody),
+      headers: {
+        Authorization: `Bearer ${process.env.ALCHEMYST_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!contextResponse.ok || contextResponse.redirected) {
+    return [];
+  }
+
+  return contextResponse.json();
+};
+
 export const generateDocs = async (
   query: string
 ): Promise<ParsedData | null> => {
   await connectToCoreDB();
+  const fetchedContext = await fetchContext(query);
   const parsedQuery = `You are a helpful JSON generator assistant. Please return me the JSON for the question I want to get an answer in the following format:
 
 {
@@ -124,10 +153,15 @@ Return to me information on the user query as a JSON, based on the reference dat
 
 The user query is:
 \`\`\`
-How does Maya help me with researching on people to sell?
+${query}
 \`\`\`
 
-For the reference data, you can use context. Be as elaborate as possible. Assume the user has no working knowledge about GenAI, LLMs or the Alchemyst Platform. Introduce yourself as Maya. Do not call the user's name. If you have multiple "content" fields, combine them into one.
+The relevant context is:
+\`\`\`
+${fetchedContext}
+\`\`\`
+
+Be as elaborate as possible. Assume the user has no working knowledge about GenAI, LLMs or the Alchemyst Platform. Introduce yourself as Maya. Do not call the user's name. If you have multiple "content" fields, combine them into one.
 `;
   const requestBody = {
     chat_history: [
