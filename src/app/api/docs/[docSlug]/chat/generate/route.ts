@@ -2,7 +2,7 @@ import Doc from "@/models/doc";
 import DocChat from "@/models/docChat";
 import { connectToCoreDB } from "@/utils/database";
 import { findRelevantDocChat } from "@/utils/docAndChatUtils";
-import { LangChainJSON } from "@/utils/generateDocs";
+import { fetchContext, LangChainJSON } from "@/utils/generateDocs";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -15,7 +15,7 @@ const schema = z.object({
 
 const handler = async (
   req: NextRequest,
-  { params }: { params: { docSlug: string } },
+  { params }: { params: { docSlug: string } }
 ) => {
   await connectToCoreDB();
   if (req.method !== "POST") {
@@ -25,7 +25,7 @@ const handler = async (
       },
       {
         status: 405,
-      },
+      }
     );
   }
 
@@ -37,33 +37,42 @@ const handler = async (
   if (!success) {
     return NextResponse.json(
       { success: false, message: error.format() },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
   if (!docSlug) {
     return NextResponse.json(
       { error: "No document slug given by user." },
-      { status: 400 },
+      { status: 400 }
     );
   }
   const requiredDoc = await Doc.findOne({ slug: docSlug });
   if (!requiredDoc) {
     return NextResponse.json(
       { error: "No such document slug found." },
-      { status: 404 },
+      { status: 404 }
     );
   }
 
+  const relevantContext = await fetchContext(data.content);
   const augmentedQuery = `
+  The doc content is:
   \`\`\`
   ${requiredDoc.content}
+  \`\`\`
+
+  The relevant context from the knowledge base is:
+  \`\`\`
+  ${relevantContext}
   \`\`\`
 
   User query:
   \`\`\`
   ${data.content}
   \`\`\`
+
+  Answer the user query by grounding your answer on the doc content and the knowledge base.
   `;
 
   const concernedDoc = await Doc.findOne({ slug: docSlug });
@@ -81,12 +90,14 @@ const handler = async (
       docId: concernedDoc._id,
       messages: [],
       title: concernedDoc.title,
-    })
+    });
 
     // return NextResponse.json({ error: "Cannot find chat corresponding to the document." }, { status: 500 });
   }
 
-  const apiCompatibleMessages: LangChainJSON[] = (concernedChat.messages ?? []).map(msg => ({ role: msg.role, content: msg.message }))
+  const apiCompatibleMessages: LangChainJSON[] = (
+    concernedChat.messages ?? []
+  ).map((msg) => ({ role: msg.role, content: msg.message }));
   const newChatMessage = await fetch(
     process.env.BACKEND_BASE_URL + "/api/v1/chat/generate",
     {
@@ -96,7 +107,10 @@ const handler = async (
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        chat_history: [...apiCompatibleMessages, { role: 'user', content: augmentedQuery } satisfies LangChainJSON],
+        chat_history: [
+          ...apiCompatibleMessages,
+          { role: "user", content: augmentedQuery } satisfies LangChainJSON,
+        ],
         chatId: concernedChat._id.toString(),
         researchMode: false,
         stream: false,
@@ -104,13 +118,13 @@ const handler = async (
         scope: "internal",
         title: concernedDoc.title,
       }),
-    },
+    }
   );
 
   if (!newChatMessage.ok) {
     return NextResponse.json(
       { error: "Failed to generate new chat message." },
-      { status: 500 },
+      { status: 500 }
     );
   }
 
@@ -129,7 +143,7 @@ const handler = async (
       id: crypto.randomUUID(),
       chatId: concernedChat._id.toString(),
     },
-    { status: 201 },
+    { status: 201 }
   );
 };
 
