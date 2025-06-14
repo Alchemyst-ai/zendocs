@@ -110,6 +110,14 @@ export function slugify(title: string): string {
     .replace(/-+/g, "-"); // Replace multiple hyphens with a single hyphen
 }
 
+export const fetchContextDummy = async () => {
+  const response = await fetch(
+    "https://platform-dev.getalchemystai.com/api/openapi.json"
+  );
+  const data = await response.json();
+  return data;
+};
+
 export const fetchContext = async (query: string) => {
   try {
     await connectToCoreDB();
@@ -148,14 +156,48 @@ export const generateDocs = async (
   query: string
 ): Promise<ParsedData | null> => {
   await connectToCoreDB();
-  const fetchedContext = await fetchContext(query);
-  const parsedQuery = `You are a helpful JSON generator assistant. Please return me the JSON for the question I want to get an answer in the following format:
+
+  const fetchedContext = await fetchContextDummy();
+  // const fetchedContext = await fetchContext(query);
+
+  const parsedQuery = `You are a technical documentation generator. Generate a JSON response in the following format:
 
 {
 "title": string,
 "content": string
 }
-Return to me information on the user query as a JSON, based on the reference data you will be given.
+
+Instructions for generating the documentation:
+
+1. Content Requirements:
+   - Must be comprehensive technical documentation in markdown format
+   - Must directly address the user query
+   - Must only use information present in the provided context
+   - Must not make up or infer information
+   - Must set content to "Context not found" if relevant information is missing
+
+2. Formatting Requirements:
+   - Use proper markdown syntax
+   - Include appropriate headers
+   - Use code blocks where relevant
+   - Include lists and other markdown elements
+   - Combine multiple content sections into a single coherent document
+
+3. Quality Requirements:
+   - Focus on technical accuracy
+   - Ensure completeness of information
+   - Maintain clarity and readability
+   - Structure information logically
+   - Elaborate and provide examples whenever possible, but do not make up information
+   - You may use the context to derive or deduce more information
+
+4. JSON Response Requirements:
+   - All special characters in the content field must be properly escaped
+   - Backticks (\`) should be escaped as \\\`
+   - Triple backticks (\`\`\`) should be escaped as \\\`\\\`\\\`
+   - Double quotes (") should be escaped as \\"
+   - Newlines should be escaped as \\n
+   - Any other special characters that could break JSON parsing should be escaped
 
 The user query is:
 \`\`\`
@@ -167,8 +209,7 @@ The relevant context is:
 ${JSON.stringify(fetchedContext)}
 \`\`\`
 
-Be as elaborate as possible. Assume the user has no working knowledge about GenAI, LLMs or the Alchemyst Platform. Introduce yourself as Maya. Do not call the user's name. If you have multiple "content" fields, combine them into one.
-`;
+There should be no other text or backticks before or after the JSON in the response.`;
   const requestBody = {
     chat_history: [
       {
@@ -260,3 +301,14 @@ Be as elaborate as possible. Assume the user has no working knowledge about GenA
     return null;
   }
 };
+
+
+// TEST CASE
+
+// const test = async () => {
+//   const query = "Can you give me some examples of context APIs?";
+//   const result = await generateDocs(query);
+//   console.log(result);
+// };
+
+// test();
