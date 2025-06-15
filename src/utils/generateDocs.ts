@@ -110,7 +110,7 @@ export function slugify(title: string): string {
     .replace(/-+/g, "-"); // Replace multiple hyphens with a single hyphen
 }
 
-export const fetchContextDummy = async () => {
+export const fetchOpenApiJson = async () => {
   const response = await fetch(
     "https://platform-dev.getalchemystai.com/api/openapi.json"
   );
@@ -123,8 +123,8 @@ export const fetchContext = async (query: string) => {
     await connectToCoreDB();
     const requestBody = {
       query,
-      similarity_threshold: 0.8,
-      minimum_similarity_threshold: 0.6,
+      similarity_threshold: 0.1,
+      // minimum_similarity_threshold: 0.6,
       scope: "external",
       metadata: {},
     };
@@ -145,7 +145,9 @@ export const fetchContext = async (query: string) => {
       return [];
     }
 
-    return contextResponse.json();
+    const response = await contextResponse.text();
+    console.log("Received response = ", response);
+    return JSON.parse(response);
   } catch (error) {
     console.log("Error caused while fetching context = ", error);
     return [];
@@ -157,7 +159,12 @@ export const generateDocs = async (
 ): Promise<ParsedData | null> => {
   await connectToCoreDB();
 
-  const fetchedContext = await fetchContextDummy();
+  let fetchedContext = await fetchContext(query);
+  // TODO: A quick hack for now, should be removed later.
+
+  if (Array.isArray(fetchedContext) && fetchedContext.length === 0) {
+    fetchedContext = [await fetchOpenApiJson()];
+  }
   // const fetchedContext = await fetchContext(query);
 
   const parsedQuery = `You are a technical documentation generator. Generate a JSON response in the following format:
@@ -188,6 +195,7 @@ Instructions for generating the documentation:
    - Ensure completeness of information
    - Maintain clarity and readability
    - Structure information logically
+   - Use paragraphs and newlines adequately
    - Elaborate and provide examples whenever possible, but do not make up information
    - You may use the context to derive or deduce more information
 
@@ -210,6 +218,10 @@ ${JSON.stringify(fetchedContext)}
 \`\`\`
 
 There should be no other text or backticks before or after the JSON in the response.`;
+
+  console.log("Parsed query = ");
+  console.log(parsedQuery);
+
   const requestBody = {
     chat_history: [
       {
@@ -301,7 +313,6 @@ There should be no other text or backticks before or after the JSON in the respo
     return null;
   }
 };
-
 
 // TEST CASE
 

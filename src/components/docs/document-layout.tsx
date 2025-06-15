@@ -31,7 +31,7 @@ export default function DocumentLayout({
     <div className="h-screen bg-black text-white relative">
       {/* Gradient background */}
       <div className="absolute inset-0 bg-[linear-gradient(315deg,rgba(249,115,22,0.15)_0%,rgba(249,115,22,0.05)_50%,transparent_100%)]" />
-      
+
       <ResizablePanelGroup
         direction="horizontal"
         className="min-h-full rounded-lg border-none"
