@@ -16,38 +16,31 @@ export default function TableOfContents({ content }: TableOfContentsProps) {
   const [activeId, setActiveId] = useState<string>("");
 
   useEffect(() => {
-    // Wait for DOM to be ready
     const timer = setTimeout(() => {
-      // Always add Introduction as the first item
       const items: TOCItem[] = [
         { id: 'introduction', text: 'Introduction', level: 1, children: [] }
       ];
       
-      // Get the actual DOM element with the content
       const contentElement = document.querySelector('.prose');
       if (!contentElement) return;
 
-      // Add an ID to the first paragraph for Introduction
       const firstParagraph = contentElement.querySelector('p');
       if (firstParagraph && !firstParagraph.id) {
         firstParagraph.id = 'introduction';
       }
       
-      // Get all H3 and H4 headings directly from the DOM
       const headings = contentElement.querySelectorAll('h3, h4');
       console.log('Found headings:', Array.from(headings).map(h => ({ text: h.textContent, id: h.id, tagName: h.tagName })));
 
               Array.from(headings).forEach((heading, index) => {
           const text = heading.textContent?.trim() || '';
-          // Create a URL-friendly ID from the heading text
           const generatedId = text
             .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric chars with hyphens
-            .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
           
           const id = heading.id || generatedId || `heading-${index}`;
 
-          // Set the ID on the actual DOM element
           heading.setAttribute('id', id);
           
           console.log(`Set ID "${id}" on heading "${text}"`);
@@ -57,14 +50,13 @@ export default function TableOfContents({ content }: TableOfContentsProps) {
           items.push(item);
                 });
 
-        // Verify IDs were set correctly
         setTimeout(() => {
           const verifyHeadings = contentElement.querySelectorAll('h3, h4');
           console.log('Verification - headings with IDs:', Array.from(verifyHeadings).map(h => ({ text: h.textContent, id: h.id })));
         }, 50);
 
         setTocItems(items);
-    }, 100); // Small delay to ensure DOM is ready
+    }, 100);
 
     return () => clearTimeout(timer);
   }, [content]);
@@ -88,7 +80,6 @@ export default function TableOfContents({ content }: TableOfContentsProps) {
       });
     };
 
-    // Small delay to ensure DOM is updated
     setTimeout(() => {
       observeHeadings(tocItems);
     }, 200);
