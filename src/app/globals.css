@@ -246,6 +246,45 @@ body {
   animation: neon-glow 1.5s ease-in-out infinite;
 }
 
+/* Custom thin scrollbar styles */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+/* Transparent resizable handle */
+[data-panel-resize-handle-enabled] {
+  background: transparent !important;
+  border: none !important;
+}
+
+[data-panel-resize-handle-enabled]:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-panel-resize-handle-enabled]::after {
+  display: none !important;
+}
+
 @layer base {
   * {
     @apply border-border;

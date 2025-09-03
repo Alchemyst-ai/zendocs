@@ -16,39 +16,57 @@ export default function TableOfContents({ content }: TableOfContentsProps) {
   const [activeId, setActiveId] = useState<string>("");
 
   useEffect(() => {
-    // Parse HTML content to extract headings
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(content, 'text/html');
-    const headings = doc.querySelectorAll('h1, h2, h3');
-    
-    const items: TOCItem[] = [];
-    let currentH1: TOCItem | null = null;
-
-    Array.from(headings).forEach((heading, index) => {
-      const text = heading.textContent?.trim() || '';
-      // Create a URL-friendly ID from the heading text
-      const generatedId = text
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric chars with hyphens
-        .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+    // Wait for DOM to be ready
+    const timer = setTimeout(() => {
+      // Always add Introduction as the first item
+      const items: TOCItem[] = [
+        { id: 'introduction', text: 'Introduction', level: 1, children: [] }
+      ];
       
-      const id = heading.id || generatedId || `heading-${index}`;
-      const level = parseInt(heading.tagName.charAt(1));
+      // Get the actual DOM element with the content
+      const contentElement = document.querySelector('.prose');
+      if (!contentElement) return;
 
-      // Add or update ID in the actual content
-      heading.id = id;
-
-      const item = { id, text, level, children: [] };
-
-      if (level === 1 || level === 2) {
-        currentH1 = item;
-        items.push(item);
-      } else if (level === 3 && currentH1) {
-        currentH1.children?.push(item);
+      // Add an ID to the first paragraph for Introduction
+      const firstParagraph = contentElement.querySelector('p');
+      if (firstParagraph && !firstParagraph.id) {
+        firstParagraph.id = 'introduction';
       }
-    });
+      
+      // Get all H3 and H4 headings directly from the DOM
+      const headings = contentElement.querySelectorAll('h3, h4');
+      console.log('Found headings:', Array.from(headings).map(h => ({ text: h.textContent, id: h.id, tagName: h.tagName })));
 
-    setTocItems(items);
+              Array.from(headings).forEach((heading, index) => {
+          const text = heading.textContent?.trim() || '';
+          // Create a URL-friendly ID from the heading text
+          const generatedId = text
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric chars with hyphens
+            .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+          
+          const id = heading.id || generatedId || `heading-${index}`;
+
+          // Set the ID on the actual DOM element
+          heading.setAttribute('id', id);
+          
+          console.log(`Set ID "${id}" on heading "${text}"`);
+
+          const level = heading.tagName.toLowerCase() === 'h3' ? 3 : 4;
+          const item = { id, text, level, children: [] };
+          items.push(item);
+                });
+
+        // Verify IDs were set correctly
+        setTimeout(() => {
+          const verifyHeadings = contentElement.querySelectorAll('h3, h4');
+          console.log('Verification - headings with IDs:', Array.from(verifyHeadings).map(h => ({ text: h.textContent, id: h.id })));
+        }, 50);
+
+        setTocItems(items);
+    }, 100); // Small delay to ensure DOM is ready
+
+    return () => clearTimeout(timer);
   }, [content]);
 
   useEffect(() => {
@@ -67,29 +85,27 @@ export default function TableOfContents({ content }: TableOfContentsProps) {
       items.forEach((item) => {
         const element = document.getElementById(item.id);
         if (element) observer.observe(element);
-        
-        item.children?.forEach((child) => {
-          const childElement = document.getElementById(child.id);
-          if (childElement) observer.observe(childElement);
-        });
       });
     };
 
-    observeHeadings(tocItems);
+    // Small delay to ensure DOM is updated
+    setTimeout(() => {
+      observeHeadings(tocItems);
+    }, 200);
+
     return () => observer.disconnect();
   }, [tocItems]);
 
   const scrollToHeading = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      const offset = 100; // Adjust this value based on your header height
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - offset;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
+      element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
       });
+      setActiveId(id);
+    } else {
+      console.warn(`Element with ID '${id}' not found`);
     }
   };
 
@@ -98,7 +114,7 @@ export default function TableOfContents({ content }: TableOfContentsProps) {
   }
 
   return (
-    <div className="sticky top-6 space-y-6">
+    <div className="sticky top-6 space-y-6 overflow-y-auto">
       <div className="bg-zinc-950/60 rounded-xl p-6 shadow-sm">
         <div className="flex items-center mb-4">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -106,44 +122,22 @@ export default function TableOfContents({ content }: TableOfContentsProps) {
           </svg>
           <h3 className="text-sm uppercase tracking-wide text-gray-300 font-medium">On this page</h3>
         </div>
-        <nav className="space-y-2 pl-2">
+        <nav className="space-y-2 pl-2 max-h-96 overflow-y-auto">
           {tocItems.map((item) => (
-            <div key={item.id} className="space-y-1">
-              {/* Main topic */}
-              <button
-                onClick={() => scrollToHeading(item.id)}
-                className={`
-                  block w-full text-left text-sm font-medium transition-colors duration-200 rounded-md px-3 py-2
-                  ${activeId === item.id 
-                    ? 'bg-amber-400/10 text-amber-400' 
-                    : 'text-gray-100 hover:bg-zinc-800/50 hover:text-amber-400'
-                  }
-                `}
-              >
-                {item.text}
-              </button>
-              
-              {/* Subtopics */}
-              {item.children && item.children.length > 0 && (
-                <div className="ml-4 space-y-1">
-                  {item.children.map((child) => (
-                    <button
-                      key={child.id}
-                      onClick={() => scrollToHeading(child.id)}
-                      className={`
-                        block w-full text-left text-xs transition-colors duration-200 rounded-md px-3 py-1
-                        ${activeId === child.id 
-                          ? 'bg-amber-400/10 text-amber-400' 
-                          : 'text-gray-300 hover:bg-zinc-800/50 hover:text-amber-400'
-                        }
-                      `}
-                    >
-                      {child.text}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            <button
+              key={item.id}
+              onClick={() => scrollToHeading(item.id)}
+              className={`
+                block w-full text-left text-sm font-medium transition-colors duration-200 rounded-md px-3 py-2
+                ${item.level === 4 ? 'ml-4' : ''}
+                ${activeId === item.id 
+                  ? 'bg-amber-400/10 text-amber-400' 
+                  : 'text-gray-100 hover:bg-zinc-800/50 hover:text-amber-400'
+                }
+              `}
+            >
+              {item.text}
+            </button>
           ))}
         </nav>
       </div>
