@@ -202,8 +202,13 @@ For the reference data, you can use context. Be as elaborate as possible. Assume
         content: parsedData.result.content,
         slug: slugify(parsedData.title),
         title: parsedData.title,
+        name: slugify(parsedData.title), // system name from slug
+        description: parsedData.result.content.split('\n')[0].replace('#', '').trim(), // Use first line as description
+        authors: ['AI'], // Mark as AI-generated
+        tags: [], // Empty tags by default
         metadata: {
           timestamp: parsedData.timestamp,
+          isAIGenerated: true
         },
       });
 

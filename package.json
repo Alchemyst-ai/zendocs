@@ -6,7 +6,8 @@
     "dev": "next dev -p 4163",
     "build": "next build",
     "start": "next start -p 4163",
-    "lint": "next lint"
+    "lint": "next lint",
+    "insert-test-docs": "tsx scripts/insert-test-docs.ts"
   },
   "dependencies": {
     "@heroicons/react": "^1.0.6",
