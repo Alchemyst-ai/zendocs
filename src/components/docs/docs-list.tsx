@@ -1,12 +1,12 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FileText, Home, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
 
 import { DocItem } from "@/types/docs";
 
@@ -16,15 +16,15 @@ interface DocumentListProps {
 
 export type BoxType<T> =
   | {
-      content: T;
-      error: null;
-    }
+    content: T;
+    error: null;
+  }
   | {
-      content: null;
-      error: Error;
-    };
+    content: null;
+    error: Error;
+  };
 
-const fetchDocuments = async (): Promise<BoxType<Document[]>> => {
+const fetchDocuments = async (): Promise<BoxType<DocItem[]>> => {
   const documentResponse = await fetch("/api/docs/list");
 
   if (!documentResponse.ok) {
@@ -139,12 +139,11 @@ export function DocumentList({ currentSlug }: DocumentListProps) {
           <div className="space-y-2">
             {filteredDocs.map((doc) => (
               <Card
-                key={doc.id}
-                className={`bg-zinc-900 border-zinc-800 hover:bg-zinc-800 transition-colors cursor-pointer ${
-                  doc.slug === currentSlug
-                    ? "border-l-4 border-l-amber-500"
-                    : ""
-                }`}
+                key={`${doc.name}-${doc.slug}`}
+                className={`bg-zinc-900 border-zinc-800 hover:bg-zinc-800 transition-colors cursor-pointer ${doc.slug === currentSlug
+                  ? "border-l-4 border-l-amber-500"
+                  : ""
+                  }`}
                 onClick={() => handleDocumentClick(doc.slug)}
               >
                 <CardContent className="p-3">
@@ -183,7 +182,7 @@ export function DocumentList({ currentSlug }: DocumentListProps) {
                           <span>•</span>
                         </>
                       )}
-                      <span>Generated on {new Date(doc.createdAt).toLocaleDateString('en-US', { 
+                      <span>Generated on {new Date(doc.createdAt).toLocaleDateString('en-US', {
                         month: 'numeric',
                         day: 'numeric',
                         year: 'numeric'
