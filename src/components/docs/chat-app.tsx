@@ -156,7 +156,7 @@ function ChatApp({ docSlug }: ChatAppProps) {
       </CardHeader>
 
       <CardContent className="flex-grow overflow-hidden p-0 relative z-10">
-        <ScrollArea className="h-[calc(100vh-13rem)] px-4">
+        <ScrollArea className="h-full px-4">
           <div className="space-y-4 pt-2 pb-4">
             {messages.map((message) => (
               <div

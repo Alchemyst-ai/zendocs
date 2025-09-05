@@ -8,13 +8,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
-interface Document {
-  id: string;
-  title: string;
-  slug: string;
-  category: string;
-  updatedAt: string;
-}
+import { DocItem } from "@/types/docs";
 
 interface DocumentListProps {
   currentSlug: string;
@@ -53,8 +47,8 @@ const fetchDocuments = async (): Promise<BoxType<Document[]>> => {
 export function DocumentList({ currentSlug }: DocumentListProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
-  const [documents, setDocuments] = useState<Document[]>([]);
-  const [filteredDocs, setFilteredDocs] = useState<Document[]>([]);
+  const [documents, setDocuments] = useState<DocItem[]>([]);
+  const [filteredDocs, setFilteredDocs] = useState<DocItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -79,10 +73,16 @@ export function DocumentList({ currentSlug }: DocumentListProps) {
     if (searchQuery.trim() === "") {
       setFilteredDocs(documents);
     } else {
-      const filtered = documents.filter(
-        (doc) => doc.title.toLowerCase().includes(searchQuery.toLowerCase()), // ||
-        // doc.category.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      const filtered = documents.filter((doc) => {
+        const searchLower = searchQuery.toLowerCase();
+        return (
+          doc.title.toLowerCase().includes(searchLower) ||
+          doc.name.toLowerCase().includes(searchLower) ||
+          doc.description.toLowerCase().includes(searchLower) ||
+          doc.tags.some(tag => tag.toLowerCase().includes(searchLower)) ||
+          doc.authors.some(author => author.toLowerCase().includes(searchLower))
+        );
+      });
       setFilteredDocs(filtered);
     }
   }, [searchQuery, documents]);
@@ -148,22 +148,64 @@ export function DocumentList({ currentSlug }: DocumentListProps) {
                 onClick={() => handleDocumentClick(doc.slug)}
               >
                 <CardContent className="p-3">
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-6 w-6 mt-1 text-gray-400" />
-                    <div>
-                      <h3 className="font-medium text-sm text-gray-200">
-                        {doc.title.length > 40 ? doc.title.slice(0, 40) + "..." : doc.title}
-                      </h3>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs text-gray-400">
-                          {doc.category || "Uncategorized"}
-                        </span>
-                        <span className="text-xs text-gray-500">•</span>
-                        <span className="text-xs text-gray-500">
-                          {doc.updatedAt.slice(0, 10)}
-                        </span>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-start gap-2">
+                      <FileText className="h-6 w-6 mt-1 text-gray-400" />
+                      <div className="flex-1">
+                        <h3 className="font-medium text-sm text-gray-200">
+                          {doc.title.length > 40 ? doc.title.slice(0, 40) + "..." : doc.title}
+                        </h3>
+                        {doc.description && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            {doc.description.length > 60 ? doc.description.slice(0, 60) + "..." : doc.description}
+                          </div>
+                        )}
                       </div>
                     </div>
+
+                    {doc.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {doc.tags.map((tag, index) => (
+                          <span
+                            key={index}
+                            className="px-2 py-0.5 text-xs rounded-full bg-amber-500/10 text-amber-500"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      {doc.authors.length > 0 && (
+                        <>
+                          <span className="text-gray-400">By {doc.authors.join(", ")}</span>
+                          <span>•</span>
+                        </>
+                      )}
+                      <span>Generated on {new Date(doc.createdAt).toLocaleDateString('en-US', { 
+                        month: 'numeric',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })}</span>
+                    </div>
+
+                    {doc.children.length > 0 && (
+                      <div className="mt-1 pl-3 border-l-2 border-zinc-800">
+                        {doc.children.map((child) => (
+                          <div
+                            key={child.slug}
+                            className="text-xs text-gray-400 hover:text-amber-500 cursor-pointer py-0.5"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDocumentClick(child.slug);
+                            }}
+                          >
+                            {child.title}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>

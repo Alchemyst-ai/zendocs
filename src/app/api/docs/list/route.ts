@@ -13,14 +13,34 @@ const handler = async (req: NextRequest) => {
     );
   }
 
-  const docs = Doc.find({}).sort({ createdAt: -1 });
+  const docs = Doc.find({})
+    .select('name description title slug authors reviewers editors tags children createdAt updatedAt')
+    .sort({ createdAt: -1 });
+  
   const docsList = await docs.exec();
-  const docsListWithoutChatId = docsList.map((doc) => ({
-    ...doc.toObject(),
-    chatId: undefined,
-  }));
+  
+  // Process the documents to handle children
+  const docsMap = new Map();
+  docsList.forEach(doc => {
+    docsMap.set(doc._id.toString(), doc.toObject());
+  });
+
+  const processedDocs = docsList.map(doc => {
+    const docObj = docsMap.get(doc._id.toString());
+    return {
+      ...docObj,
+      children: doc.children.map(childId => {
+        const child = docsMap.get(childId);
+        return child ? {
+          title: child.title,
+          slug: child.slug,
+          name: child.name
+        } : null;
+      }).filter(child => child !== null)
+    };
+  });
   return NextResponse.json(
-    { success: true, data: docsListWithoutChatId },
+    { success: true, data: processedDocs },
     { status: 200 },
   );
 };

@@ -14,20 +14,31 @@ interface IMetadata {
 
 // Interface for the document
 export interface IDoc extends Document {
+  name: string;
+  description: string;
   content: string;
   title: string;
-  metadata: IMetadata;
+  slug: string;
+  authors: string[];
+  reviewers: string[];
+  editors: string[];
+  tags: string[];
+  children: string[]; // Store child document IDs as references
   createdAt: Date;
   updatedAt: Date;
+  metadata: IMetadata;
 }
 
 // Schema definition
 const docSchema = new Schema(
   {
-    slug: {
+    name: {
       type: String,
       required: true,
-      unique: true,
+    },
+    description: {
+      type: String,
+      required: true,
     },
     content: {
       type: String,
@@ -36,6 +47,31 @@ const docSchema = new Schema(
     title: {
       type: String,
       required: true,
+    },
+    slug: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    authors: {
+      type: [String],
+      default: [],
+    },
+    reviewers: {
+      type: [String],
+      default: [],
+    },
+    editors: {
+      type: [String],
+      default: [],
+    },
+    tags: {
+      type: [String],
+      default: [],
+    },
+    children: {
+      type: [String], // References to other document IDs
+      default: [],
     },
     metadata: {
       type: Schema.Types.Mixed,

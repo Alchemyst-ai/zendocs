@@ -2,13 +2,14 @@
 
 import ChatApp from "@/components/docs/chat-app";
 import { DocumentList } from "@/components/docs/docs-list";
+import TableOfContents from "@/components/docs/table-of-contents";
 import { Button } from "@/components/ui/button";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { Menu, MessageSquare, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState } from "react";
 
 interface DocumentLayoutProps {
@@ -24,8 +25,8 @@ export default function DocumentLayout({
   content,
   docSlug,
 }: DocumentLayoutProps) {
-  const [isChatOpen, setIsChatOpen] = useState(false);
   const [isDocListOpen, setIsDocListOpen] = useState(true);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   return (
     <div className="h-screen bg-black text-white relative">
@@ -56,12 +57,10 @@ export default function DocumentLayout({
         )}
 
         <ResizablePanel
-          defaultSize={
-            isDocListOpen ? (isChatOpen ? 50 : 80) : isChatOpen ? 70 : 100
-          }
-          minSize={30}
+          defaultSize={60}
+          minSize={40}
         >
-          <div className="container mx-auto px-4 py-12 max-w-6xl h-full overflow-auto relative">
+          <div className="container mx-auto px-4 py-12 max-w-4xl h-full overflow-auto relative">
             <header className="mb-10 flex items-center relative z-10">
               {!isDocListOpen && (
                 <Button
@@ -89,33 +88,33 @@ export default function DocumentLayout({
           </div>
         </ResizablePanel>
 
-        {isChatOpen && (
-          <>
-            <ResizableHandle withHandle />
-            <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
-              <div className="h-full bg-zinc-950 relative">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-2 right-2 text-gray-400 hover:text-black z-50"
-                  onClick={() => setIsChatOpen(false)}
-                >
-                  <X className="h-5 w-5" />
-                </Button>
-                <ChatApp docSlug={docSlug} />
-              </div>
-            </ResizablePanel>
-          </>
-        )}
+        {/* Right side Table of Contents - No divider */}
+        <ResizablePanel defaultSize={20} minSize={15} maxSize={25}>
+          <div className="h-full p-6 flex-shrink-0">
+            <TableOfContents content={content} />
+          </div>
+        </ResizablePanel>
       </ResizablePanelGroup>
 
-      {!isChatOpen && (
+      {/* Chat Widget Toggle Icon */}
+      <div className="fixed bottom-6 right-6 z-50">
         <Button
-          className="fixed bottom-6 right-6 rounded-full w-12 h-12 bg-amber-500 hover:bg-amber-600 shadow-lg"
-          onClick={() => setIsChatOpen(true)}
+          onClick={() => setIsChatOpen(!isChatOpen)}
+          className="w-12 h-12 rounded-full bg-black hover:bg-black shadow-lg p-0 overflow-hidden"
         >
-          <MessageSquare className="h-6 w-6" />
+          <img
+            src="/logo/alchemyst-ai.jpeg"
+            alt="Alchemyst AI"
+            className="w-8 h-8 object-cover"
+          />
         </Button>
+      </div>
+
+      {/* Floating Chat Widget (toggleable) */}
+      {isChatOpen && (
+        <div className="fixed bottom-24 right-6 z-40 w-[380px] h-[520px] shadow-2xl rounded-lg overflow-hidden">
+          <ChatApp docSlug={docSlug} />
+        </div>
       )}
     </div>
   );

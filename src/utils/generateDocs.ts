@@ -295,8 +295,13 @@ There should be no other text or backticks before or after the JSON in the respo
         content: parsedData.result.content,
         slug: slugify(parsedData.title),
         title: parsedData.title,
+        name: slugify(parsedData.title), // system name from slug
+        description: parsedData.result.content.split('\n')[0].replace('#', '').trim(), // Use first line as description
+        authors: ['AI'], // Mark as AI-generated
+        tags: [], // Empty tags by default
         metadata: {
           timestamp: parsedData.timestamp,
+          isAIGenerated: true
         },
       });
 

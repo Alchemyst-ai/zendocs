@@ -36,12 +36,10 @@ async function getData(
   slug: string
 ): Promise<{ data: DocResponse; success: boolean }> {
   const res = await fetch(
-    `${
-      process.env.NEXT_APP_BACKEND_URL ?? "http://localhost:4163"
-    }/api/docs/${slug}`,
+    `${process.env.NEXT_APP_BACKEND_URL ?? "http://localhost:4163"}/api/docs/${slug}?t=${Date.now()}`,
     {
       method: "GET",
-      // cache: "no-store",
+      cache: "no-store",
       // signal: new AbortController().abort(5_000),
     }
   );
@@ -53,6 +51,7 @@ async function getData(
   let { data, success }: { data: DocResponse; success: boolean } =
     await res.json();
 
+  console.log("Raw API response:", { data, success });
   data.content = (await remark().use(html).process(data.content)).toString();
 
   return { data, success };
