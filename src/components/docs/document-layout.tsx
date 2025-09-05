@@ -57,10 +57,10 @@ export default function DocumentLayout({
         )}
 
         <ResizablePanel
-          defaultSize={60}
+          defaultSize={50}
           minSize={40}
         >
-          <div className="container mx-auto px-4 py-12 max-w-4xl h-full overflow-auto relative">
+          <div className="container mx-auto px-12 py-12 max-w-auto h-full overflow-auto relative">
             <header className="mb-10 flex items-center relative z-10">
               {!isDocListOpen && (
                 <Button
@@ -89,8 +89,8 @@ export default function DocumentLayout({
         </ResizablePanel>
 
         {/* Right side Table of Contents - No divider */}
-        <ResizablePanel defaultSize={20} minSize={15} maxSize={25}>
-          <div className="h-full p-6 flex-shrink-0">
+        <ResizablePanel defaultSize={18} minSize={15} maxSize={30}>
+          <div className="h-full ml-6 flex-shrink-0">
             <TableOfContents content={content} />
           </div>
         </ResizablePanel>

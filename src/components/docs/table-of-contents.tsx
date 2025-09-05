@@ -18,9 +18,9 @@ export default function TableOfContents({ content }: TableOfContentsProps) {
   useEffect(() => {
     const timer = setTimeout(() => {
       const items: TOCItem[] = [
-        { id: 'introduction', text: 'Introduction', level: 1, children: [] }
+        // { id: 'introduction', text: 'Introduction', level: 1, children: [] }
       ];
-      
+
       const contentElement = document.querySelector('.prose');
       if (!contentElement) return;
 
@@ -28,34 +28,35 @@ export default function TableOfContents({ content }: TableOfContentsProps) {
       if (firstParagraph && !firstParagraph.id) {
         firstParagraph.id = 'introduction';
       }
-      
-      const headings = contentElement.querySelectorAll('h3, h4');
+
+      const headings = contentElement.querySelectorAll('h1, h2, h3, h4');
       console.log('Found headings:', Array.from(headings).map(h => ({ text: h.textContent, id: h.id, tagName: h.tagName })));
 
-              Array.from(headings).forEach((heading, index) => {
-          const text = heading.textContent?.trim() || '';
-          const generatedId = text
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-+|-+$/g, '');
-          
-          const id = heading.id || generatedId || `heading-${index}`;
+      Array.from(headings).forEach((heading, index) => {
+        const text = heading.textContent?.trim() || '';
+        const generatedId = text
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '');
 
-          heading.setAttribute('id', id);
-          
-          console.log(`Set ID "${id}" on heading "${text}"`);
+        const id = heading.id || generatedId || `heading-${index}`;
 
-          const level = heading.tagName.toLowerCase() === 'h3' ? 3 : 4;
-          const item = { id, text, level, children: [] };
-          items.push(item);
-                });
+        heading.setAttribute('id', id);
 
-        setTimeout(() => {
-          const verifyHeadings = contentElement.querySelectorAll('h3, h4');
-          console.log('Verification - headings with IDs:', Array.from(verifyHeadings).map(h => ({ text: h.textContent, id: h.id })));
-        }, 50);
+        console.log(`Set ID "${id}" on heading "${text}"`);
 
-        setTocItems(items);
+
+        const level = heading.tagName.toLowerCase().startsWith('h') && heading.tagName.length === 2 ? parseInt(heading.tagName[1]) : 7;
+        const item = { id, text, level, children: [] };
+        items.push(item);
+      });
+
+      setTimeout(() => {
+        const verifyHeadings = contentElement.querySelectorAll('h1, h2, h3, h4');
+        console.log('Verification - headings with IDs:', Array.from(verifyHeadings).map(h => ({ text: h.textContent, id: h.id })));
+      }, 50);
+
+      setTocItems(items);
     }, 100);
 
     return () => clearTimeout(timer);
@@ -113,16 +114,17 @@ export default function TableOfContents({ content }: TableOfContentsProps) {
           </svg>
           <h3 className="text-sm uppercase tracking-wide text-gray-300 font-medium">On this page</h3>
         </div>
-        <nav className="space-y-2 pl-2 max-h-96 overflow-y-auto">
-          {tocItems.map((item) => (
+        <nav className="space-y-2 pl-2 max-h-screen overflow-y-auto text-wrap">
+          {tocItems.map((item, sectionIdx) => (
             <button
-              key={item.id}
-              onClick={() => scrollToHeading(item.id)}
+              key={`section-${sectionIdx + 1}-${item.id}`}
+              id={`section-${sectionIdx + 1}-${item.id}`}
+              onClick={() => scrollToHeading(`section-${sectionIdx + 1}-${item.id}`)}
               className={`
-                block w-full text-left text-sm font-medium transition-colors duration-200 rounded-md px-3 py-2
-                ${item.level === 4 ? 'ml-4' : ''}
-                ${activeId === item.id 
-                  ? 'bg-amber-400/10 text-amber-400' 
+                  block w-[15vw] text-left text-sm font-medium transition-colors duration-200 rounded-md px-3 py-2
+                  ml-${item.level}
+                ${activeId === `section-${sectionIdx + 1}-${item.id}`
+                  ? 'bg-amber-400/10 text-amber-400'
                   : 'text-gray-100 hover:bg-zinc-800/50 hover:text-amber-400'
                 }
               `}
@@ -134,4 +136,4 @@ export default function TableOfContents({ content }: TableOfContentsProps) {
       </div>
     </div>
   );
-} 
+}
