@@ -69,7 +69,7 @@ async function getData(
     await res.json();
 
   console.log("Raw API response:", { data, success });
-  data.content = ((await processor.process(data.content)) as VFile).toString();
+  data.content = processMarkdownContentBeforeConversion(((await processor.process(data.content)) as VFile).toString());
 
   return { data, success };
 }
