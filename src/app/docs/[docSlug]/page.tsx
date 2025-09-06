@@ -26,6 +26,8 @@ const processMarkdownContentBeforeConversion = (content: string) => {
 
   data = data.replace(/\\n/g, "\n\n");
   data = data.replace(/\n/g, "\n\n");
+
+  return data;
 };
 
 
