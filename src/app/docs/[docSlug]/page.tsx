@@ -1,7 +1,14 @@
 import DocumentLayout from "@/components/docs/document-layout";
+import { remarkDocx } from "@m2d/remark-docx";
 import { Metadata } from "next";
-import { remark } from "remark";
-import html from "remark-html";
+import rehypeStringify from 'rehype-stringify';
+import remarkFrontmatter from "remark-frontmatter";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import remarkParse from "remark-parse";
+import remarkRehype from "remark-rehype";
+import { unified } from "unified";
+import type { VFile } from 'vfile';
 
 interface DocResponse {
   title: string;
@@ -19,7 +26,19 @@ const processMarkdownContentBeforeConversion = (content: string) => {
 
   data = data.replace(/\\n/g, "\n\n");
   data = data.replace(/\n/g, "\n\n");
+
+  return data;
 };
+
+
+const processor = unified()
+  .use(remarkParse)
+  .use(remarkGfm)
+  .use(remarkFrontmatter)
+  .use(remarkMath)
+  .use(remarkDocx)
+  .use(remarkRehype)
+  .use(rehypeStringify, { allowDangerousHtml: true });
 
 export async function generateMetadata({
   params,
@@ -52,7 +71,7 @@ async function getData(
     await res.json();
 
   console.log("Raw API response:", { data, success });
-  data.content = (await remark().use(html).process(data.content)).toString();
+  data.content = processMarkdownContentBeforeConversion(((await processor.process(data.content)) as VFile).toString());
 
   return { data, success };
 }
