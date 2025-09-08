@@ -67,8 +67,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
+        suppressHydrationWarning
         className={`${satoshi.variable} font-satoshi max-w-screen overflow-x-hidden`}
       >
         {children}
