@@ -50,6 +50,7 @@ export function DocumentList({ currentSlug }: DocumentListProps) {
   const [documents, setDocuments] = useState<DocItem[]>([]);
   const [filteredDocs, setFilteredDocs] = useState<DocItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [expandedDocs, setExpandedDocs] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchDocuments().then((data) => {
@@ -64,14 +65,33 @@ export function DocumentList({ currentSlug }: DocumentListProps) {
     });
   }, []);
 
+  // Auto-expand parent when child is selected
   useEffect(() => {
-    console.log("Documents fetched:", documents);
-  }, [documents]);
+    if (currentSlug) {
+      // Find parent doc that has the current slug as a child
+      const parentDoc = documents.find(doc => 
+        doc.children.some(child => child.slug === currentSlug)
+      );
+      if (parentDoc) {
+        setExpandedDocs(prev => new Set([...prev, parentDoc.slug]));
+      }
+    }
+  }, [currentSlug, documents]);
 
   // Filter documents based on search query
+  // Filter to get only parent documents or documents without parents
+  const getParentDocs = (docs: DocItem[]) => {
+    // Create a set of all child document IDs
+    const childIds = new Set(
+      docs.flatMap(doc => doc.children.map(child => child.slug))
+    );
+    // Return only documents that aren't children
+    return docs.filter(doc => !childIds.has(doc.slug));
+  };
+
   useEffect(() => {
     if (searchQuery.trim() === "") {
-      setFilteredDocs(documents);
+      setFilteredDocs(getParentDocs(documents));
     } else {
       const filtered = documents.filter((doc) => {
         const searchLower = searchQuery.toLowerCase();
@@ -83,7 +103,9 @@ export function DocumentList({ currentSlug }: DocumentListProps) {
           doc.authors.some(author => author.toLowerCase().includes(searchLower))
         );
       });
-      setFilteredDocs(filtered);
+      // When searching, we want to show matching parent docs and their children
+      const matchingParents = getParentDocs(filtered);
+      setFilteredDocs(matchingParents);
     }
   }, [searchQuery, documents]);
 
@@ -93,6 +115,19 @@ export function DocumentList({ currentSlug }: DocumentListProps) {
 
   const handleHomeClick = () => {
     router.push("/");
+  };
+
+  const toggleExpand = (slug: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpandedDocs(prev => {
+      const next = new Set(prev);
+      if (next.has(slug)) {
+        next.delete(slug);
+      } else {
+        next.add(slug);
+      }
+      return next;
+    });
   };
 
   return (
@@ -140,16 +175,27 @@ export function DocumentList({ currentSlug }: DocumentListProps) {
             {filteredDocs.map((doc) => (
               <Card
                 key={`${doc.name}-${doc.slug}`}
-                className={`bg-zinc-900 border-zinc-800 hover:bg-zinc-800 transition-colors cursor-pointer ${doc.slug === currentSlug
-                  ? "border-l-4 border-l-amber-500"
-                  : ""
-                  }`}
+                className={`bg-zinc-900 border-zinc-800 hover:bg-zinc-800 transition-colors cursor-pointer ${
+                  doc.slug === currentSlug || doc.children.some(child => child.slug === currentSlug)
+                    ? "border-l-4 border-l-amber-500 bg-amber-500/5"
+                    : ""
+                }`}
                 onClick={() => handleDocumentClick(doc.slug)}
               >
                 <CardContent className="p-3">
                   <div className="flex flex-col gap-2">
                     <div className="flex items-start gap-2">
-                      <FileText className="h-6 w-6 mt-1 text-gray-400" />
+                      <div className="flex items-center gap-2">
+                        {doc.children.length > 0 && (
+                          <button
+                            onClick={(e) => toggleExpand(doc.slug, e)}
+                            className="w-4 h-4 flex items-center justify-center text-gray-400 hover:text-amber-500"
+                          >
+                            {expandedDocs.has(doc.slug) ? '▼' : '▶'}
+                          </button>
+                        )}
+                        <FileText className="h-5 w-5 text-gray-400" />
+                      </div>
                       <div className="flex-1">
                         <h3 className="font-medium text-sm text-gray-200">
                           {doc.title.length > 40 ? doc.title.slice(0, 40) + "..." : doc.title}
@@ -189,17 +235,24 @@ export function DocumentList({ currentSlug }: DocumentListProps) {
                       })}</span>
                     </div>
 
-                    {doc.children.length > 0 && (
-                      <div className="mt-1 pl-3 border-l-2 border-zinc-800">
+                    {doc.children.length > 0 && expandedDocs.has(doc.slug) && (
+                      <div className="mt-2 pl-4 space-y-1">
                         {doc.children.map((child) => (
                           <div
                             key={child.slug}
-                            className="text-xs text-gray-400 hover:text-amber-500 cursor-pointer py-0.5"
+                            className={`flex items-center gap-2 text-sm text-gray-400 hover:text-amber-500 cursor-pointer py-1.5 px-3 rounded-md transition-colors ${
+                              child.slug === currentSlug 
+                                ? "bg-amber-500/10 text-amber-500 font-medium shadow-[0_0_0_1px_rgba(251,146,60,0.2)]" 
+                                : "hover:bg-zinc-800"
+                            }`}
                             onClick={(e) => {
                               e.stopPropagation();
                               handleDocumentClick(child.slug);
                             }}
                           >
+                            <div className="w-4 h-4 flex items-center justify-center">
+                              <div className="w-1 h-1 bg-current rounded-full"></div>
+                            </div>
                             {child.title}
                           </div>
                         ))}
